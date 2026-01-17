@@ -1,12 +1,12 @@
 <?php
 
-namespace VendorName\Skeleton\Commands;
+namespace ArtisanBuild\Resonance\Commands;
 
 use Illuminate\Console\Command;
 
-class SkeletonCommand extends Command
+class ResonanceCommand extends Command
 {
-    public $signature = 'skeleton';
+    public $signature = 'resonance';
 
     public $description = 'My command';
 

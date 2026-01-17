@@ -10,6 +10,7 @@ npm-debug.log
 yarn-error.log
 
 # Caches
+.DS_Store
 .phpunit.cache
 .phpunit.result.cache
 /build

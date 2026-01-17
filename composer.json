@@ -1,18 +1,34 @@
 {
-    "name": ":vendor_slug/:package_slug",
-    "description": ":package_description",
+    "name": "artisan-build/resonance",
+    "description": "Laravel package for beautiful Reverb, Pusher, Soketi, and Ably integration in pure PHP.",
     "keywords": [
-        ":vendor_name",
+        "artisan-build",
+        "ArtisanBuild",
+        "Artisan Build",
+        "Len Woodward",
+        "Ed Grosvenor",
+        "Resonance",
         "laravel",
-        ":package_slug"
+        "pusher",
+        "soketi",
+        "ably",
+        "reverb",
+        "echo",
+        "websocket",
+        "async"
     ],
-    "homepage": "https://github.com/:vendor_slug/:package_slug",
+    "homepage": "https://github.com/artisan-build/resonance",
     "license": "MIT",
     "authors": [
         {
-            "name": ":author_name",
-            "email": "author@domain.com",
-            "role": "Developer"
+            "name": "Len Woodward",
+            "email": "len@artisan.build",
+            "role": "Co-Founder"
+        },
+        {
+            "name": "Ed Grosvenor",
+            "email": "ed@artisan.build",
+            "role": "Co-Founder"
         }
     ],
     "require": {
@@ -30,18 +46,16 @@
         "pestphp/pest-plugin-laravel": "^4.0",
         "phpstan/extension-installer": "^1.4",
         "phpstan/phpstan-deprecation-rules": "^2.0",
-        "phpstan/phpstan-phpunit": "^2.0",
-        "spatie/laravel-ray": "^1.35"
+        "phpstan/phpstan-phpunit": "^2.0"
     },
     "autoload": {
         "psr-4": {
-            "VendorName\\Skeleton\\": "src/",
-            "VendorName\\Skeleton\\Database\\Factories\\": "database/factories/"
+            "ArtisanBuild\\Resonance\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "VendorName\\Skeleton\\Tests\\": "tests/",
+            "ArtisanBuild\\Resonance\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/"
         }
     },
@@ -63,10 +77,10 @@
     "extra": {
         "laravel": {
             "providers": [
-                "VendorName\\Skeleton\\SkeletonServiceProvider"
+                "ArtisanBuild\\Resonance\\ResonanceServiceProvider"
             ],
             "aliases": {
-                "Skeleton": "VendorName\\Skeleton\\Facades\\Skeleton"
+                "Resonance": "ArtisanBuild\\Resonance\\Facades\\Resonance"
             }
         }
     },
