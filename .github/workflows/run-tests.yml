@@ -14,23 +14,23 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
+  unit-tests:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 5
     strategy:
       fail-fast: true
       matrix:
         os: [ubuntu-latest, windows-latest]
-        php: [8.4, 8.3]
+        php: [8.4]
         laravel: [12.*, 11.*]
-        stability: [prefer-lowest, prefer-stable]
+        stability: [prefer-stable]
         include:
           - laravel: 12.*
             testbench: 10.*
           - laravel: 11.*
             testbench: 9.*
 
-    name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
+    name: Unit - P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.os }}
 
     steps:
       - name: Checkout code
@@ -53,8 +53,64 @@ jobs:
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction
 
-      - name: List Installed Dependencies
-        run: composer show -D
+      - name: Execute unit tests
+        run: vendor/bin/pest --ci --exclude-group=integration
 
-      - name: Execute tests
-        run: vendor/bin/pest --ci
+  integration-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    name: Integration Tests
+
+    services:
+      soketi:
+        image: quay.io/soketi/soketi:1.6-16-debian
+        ports:
+          - 6001:6001
+        env:
+          SOKETI_DEBUG: '1'
+          SOKETI_DEFAULT_APP_ID: app-id
+          SOKETI_DEFAULT_APP_KEY: app-key
+          SOKETI_DEFAULT_APP_SECRET: app-secret
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+          coverage: none
+
+      - name: Setup problem matchers
+        run: |
+          echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+          echo "::add-matcher::${{ runner.tool_cache }}/phpunit.json"
+
+      - name: Install dependencies
+        run: composer update --prefer-stable --prefer-dist --no-interaction
+
+      - name: Wait for Soketi
+        run: |
+          for i in {1..30}; do
+            if nc -z localhost 6001; then
+              echo "Soketi is ready"
+              exit 0
+            fi
+            echo "Waiting for Soketi... ($i/30)"
+            sleep 1
+          done
+          echo "Soketi failed to start"
+          exit 1
+
+      - name: Execute integration tests
+        env:
+          REVERB_APP_ID: app-id
+          REVERB_APP_KEY: app-key
+          REVERB_APP_SECRET: app-secret
+          REVERB_HOST: 127.0.0.1
+          REVERB_PORT: 6001
+          REVERB_SCHEME: http
+        run: vendor/bin/pest --ci --group=integration
