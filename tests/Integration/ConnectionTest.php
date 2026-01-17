@@ -11,7 +11,9 @@ it('can establish a connection', function () {
         $resonance->disconnect();
     });
 
-    runEventLoop(5.0, fn () => $connected);
+    runEventLoop(until: function () use (&$connected) {
+        return $connected;
+    });
 
     expect($connected)->toBeTrue();
 });
@@ -25,7 +27,9 @@ it('receives a socket id after connecting', function () {
         $resonance->disconnect();
     });
 
-    runEventLoop(5.0, fn () => $socketId !== null);
+    runEventLoop(until: function () use (&$socketId) {
+        return $socketId !== null;
+    });
 
     expect($socketId)->toMatch('/^\d+\.\d+$/');
 });
@@ -39,7 +43,9 @@ it('can disconnect from the server', function () {
         $disconnected = true;
     });
 
-    runEventLoop(5.0, fn () => $disconnected);
+    runEventLoop(until: function () use (&$disconnected) {
+        return $disconnected;
+    });
 
     expect($disconnected)->toBeTrue();
 });
@@ -57,7 +63,9 @@ it('can subscribe to a public channel', function () {
         });
     });
 
-    runEventLoop(5.0, fn () => $subscribed);
+    runEventLoop(until: function () use (&$subscribed) {
+        return $subscribed;
+    });
 
     expect($subscribed)->toBeTrue();
 });
@@ -82,7 +90,9 @@ it('can listen for events on a channel', function () {
         });
     });
 
-    runEventLoop(5.0, fn () => $eventReceived);
+    runEventLoop(until: function () use (&$eventReceived) {
+        return $eventReceived;
+    });
 
     expect($eventReceived)->toBeTrue();
     expect($eventData)->toHaveKey('message', 'hello');
@@ -99,7 +109,9 @@ it('can leave a channel', function () {
         $resonance->disconnect();
     });
 
-    runEventLoop(5.0, fn () => $left);
+    runEventLoop(until: function () use (&$left) {
+        return $left;
+    });
 
     expect($left)->toBeTrue();
 });

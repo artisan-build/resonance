@@ -45,29 +45,34 @@ function createTestResonance(array $options = []): Resonance
 }
 
 /**
- * Run the ReactPHP event loop for a specified duration.
+ * Run the ReactPHP event loop for a specified duration or until condition is met.
  *
- * @param  float  $maxSeconds  Maximum time to run the loop
- * @param  callable|null  $until  Optional callback that returns true when loop should stop
- * @param  float  $checkInterval  How often to check the $until callback
+ * @param  float  $timeout  Maximum time to run (seconds)
+ * @param  callable|null  $until  Optional condition callback - stops when returns true
+ * @param  float  $checkInterval  How often to check the condition (seconds)
  */
-function runEventLoop(float $maxSeconds = 1.0, ?callable $until = null, float $checkInterval = 0.01): void
+function runEventLoop(float $timeout = 1.0, ?callable $until = null, float $checkInterval = 0.01): void
 {
     $loop = Loop::get();
-    $startTime = microtime(true);
 
+    // Always set up max timeout
+    $loop->addTimer($timeout, function () use ($loop) {
+        $loop->stop();
+    });
+
+    // If we have a condition, check it periodically
     if ($until !== null) {
+        /** @var \React\EventLoop\TimerInterface|null $timer */
+        $timer = null;
         $timer = $loop->addPeriodicTimer($checkInterval, function () use ($loop, $until, &$timer) {
             if ($until()) {
-                $loop->cancelTimer($timer);
+                if ($timer !== null) {
+                    $loop->cancelTimer($timer);
+                }
                 $loop->stop();
             }
         });
     }
-
-    $loop->addTimer($maxSeconds, function () use ($loop) {
-        $loop->stop();
-    });
 
     $loop->run();
 }
