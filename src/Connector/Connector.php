@@ -1,0 +1,138 @@
+<?php
+
+declare(strict_types=1);
+
+namespace ArtisanBuild\Resonance\Connector;
+
+use ArtisanBuild\Resonance\Channel\Channel;
+use ArtisanBuild\Resonance\Channel\PresenceChannel;
+use Closure;
+
+abstract class Connector
+{
+    /**
+     * Default connector options.
+     */
+    private mixed $defaultOptions = [
+        'channelAuthorization' => [
+            'endpoint' => '/broadcasting/auth',
+            'headers' => [],
+        ],
+        'userAuthentication' => [
+            'endpoint' => '/broadcasting/user-auth',
+            'headers' => [],
+        ],
+        'cluster' => 'us3',
+        'broadcaster' => 'pusher',
+        'csrfToken' => null,
+        'bearerToken' => null,
+        'host' => null,
+        'key' => null,
+        'namespace' => 'App.Events',
+    ];
+
+    /**
+     * Connector options.
+     */
+    protected mixed $options;
+
+    /**
+     * Create a new class instance.
+     */
+    public function __construct(mixed $options)
+    {
+        $this->setOptions($options);
+        $this->connect();
+    }
+
+    /**
+     * Merge the custom options with the defaults.
+     */
+    protected function setOptions(mixed $options): mixed
+    {
+        $this->options = array_merge($this->defaultOptions, $options);
+
+        $token = $this->csrfToken();
+
+        if ($token) {
+            $this->options['channelAuthorization']['headers']['X-CSRF-TOKEN'] = $token;
+            $this->options['userAuthentication']['headers']['X-CSRF-TOKEN'] = $token;
+        }
+
+        $token = $this->options['bearerToken'];
+
+        if ($token) {
+            $this->options['channelAuthorization']['headers']['Authorization'] = "Bearer {$token}";
+            $this->options['userAuthentication']['headers']['Authorization'] = "Bearer {$token}";
+        }
+
+        return $options;
+    }
+
+    /**
+     * Extract the CSRF token from the page.
+     */
+    protected function csrfToken(): ?string
+    {
+        // let selector;
+
+        // if (typeof window !== 'undefined' && window['Laravel'] && window['Laravel'].csrfToken) {
+        //     return window['Laravel'].csrfToken;
+        // } else if (this.options.csrfToken) {
+        //     return this.options.csrfToken;
+        // } else if (
+        //     typeof document !== 'undefined' &&
+        //     typeof document.querySelector === 'function' &&
+        //     (selector = document.querySelector('meta[name="csrf-token"]'))
+        // ) {
+        //     return selector.getAttribute('content');
+        // }
+
+        return null;
+    }
+
+    /**
+     * Create a fresh connection.
+     */
+    abstract public function connect(): void;
+
+    /**
+     * Register a callback to be called when the connection is established.
+     */
+    abstract public function connected(Closure $callback): void;
+
+    /**
+     * Get a channel instance by name.
+     */
+    abstract public function channel(string $channel): Channel;
+
+    /**
+     * Get a private channel instance by name.
+     */
+    abstract public function privateChannel(string $channel): Channel;
+
+    /**
+     * Get a presence channel instance by name.
+     */
+    abstract public function presenceChannel(string $channel): PresenceChannel;
+
+    /**
+     * Leave the given channel, as well as its private and presence variants.
+     */
+    abstract public function leave(string $channel): void;
+
+    /**
+     * Leave the given channel.
+     */
+    abstract public function leaveChannel(string $channel): void;
+
+    /**
+     * Get the socket_id of the connection.
+     */
+    abstract public function socketId(): ?string;
+
+    /**
+     * Disconnect from the Resonance server.
+     */
+    abstract public function disconnect(): void;
+}

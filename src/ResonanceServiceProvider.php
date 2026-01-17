@@ -20,4 +20,17 @@ class ResonanceServiceProvider extends PackageServiceProvider
             ->hasConfigFile()
             ->hasCommand(ResonanceCommand::class);
     }
+
+    // From PoC
+    // public function boot(): void
+    // {
+    //     $this->publishes([
+    //         __DIR__.'/../config/resonance.php' => config_path('resonance.php'),
+    //     ], 'config');
+    // }
+
+    // public function register(): void
+    // {
+    //     $this->mergeConfigFrom(__DIR__.'/../config/resonance.php', 'resonance');
+    // }
 }
