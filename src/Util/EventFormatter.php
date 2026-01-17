@@ -28,7 +28,7 @@ class EventFormatter
             $event = "{$this->namespace}.{$event}";
         }
 
-        return preg_replace('/\./g', '\\', $event);
+        return preg_replace('/\./', '\\', $event);
     }
 
     /**
