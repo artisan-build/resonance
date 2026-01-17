@@ -34,11 +34,29 @@ return [
             'forceTLS' => env('REVERB_SCHEME', 'https') === 'https',
         ],
 
+        'soketi' => [
+            'broadcaster' => 'reverb',
+            'key' => env('SOKETI_APP_KEY'),
+            'secret' => env('SOKETI_APP_SECRET'),
+            'wsHost' => env('SOKETI_HOST', '127.0.0.1'),
+            'wsPort' => env('SOKETI_PORT', 6001),
+            'forceTLS' => env('SOKETI_SCHEME', 'https') === 'https',
+        ],
+
         'pusher' => [
             'broadcaster' => 'pusher',
             'key' => env('PUSHER_APP_KEY'),
             'secret' => env('PUSHER_APP_SECRET'),
             'cluster' => env('PUSHER_APP_CLUSTER', 'mt1'),
+            'forceTLS' => true,
+        ],
+
+        'ably' => [
+            'broadcaster' => 'pusher',
+            'key' => env('ABLY_KEY'),
+            'secret' => env('ABLY_SECRET'),
+            'wsHost' => 'realtime-pusher.ably.io',
+            'wsPort' => 443,
             'forceTLS' => true,
         ],
 
