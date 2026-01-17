@@ -1,6 +1,11 @@
 <?php
 
 use ArtisanBuild\Resonance\Tests\TestCase;
+use Dotenv\Dotenv;
+
+// Load .env file for test configuration
+$dotenv = Dotenv::createImmutable(dirname(__DIR__));
+$dotenv->safeLoad();
 
 /*
 |--------------------------------------------------------------------------

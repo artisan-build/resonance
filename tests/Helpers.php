@@ -37,9 +37,9 @@ function createTestResonance(array $options = []): Resonance
         'broadcaster' => 'reverb',
         'key' => env('REVERB_APP_KEY', 'app-key'),
         'secret' => env('REVERB_APP_SECRET', 'app-secret'),
-        'wsHost' => env('REVERB_HOST', '127.0.0.1'),
-        'wsPort' => (int) env('REVERB_PORT', 8080),
-        'forceTLS' => env('REVERB_SCHEME', 'http') === 'https',
+        'host' => env('REVERB_HOST', '127.0.0.1'),
+        'port' => (int) env('REVERB_PORT', 8080),
+        'scheme' => env('REVERB_SCHEME', 'http'),
         'namespace' => 'App.Events',
     ], $options));
 }
