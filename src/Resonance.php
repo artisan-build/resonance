@@ -35,10 +35,6 @@ class Resonance
     {
         $this->options = $options;
         $this->connect();
-
-        // if (! $this->options['withoutInterceptors']) {
-        //     $this->registerInterceptors();
-        // }
     }
 
     /**
@@ -57,7 +53,6 @@ class Resonance
         $this->connector = match ($this->options['broadcaster']) {
             'reverb' => new PusherConnector([...$this->options, 'cluster' => '']),
             'pusher' => new PusherConnector($this->options),
-            // 'socket.io' => new SocketIoConnector($this->options),
             'null' => new NullConnector($this->options),
             // 'function' => new $this->options['broadcaster']($this->options),
             default => throw new Exception(
@@ -137,14 +132,6 @@ class Resonance
      */
     public function encryptedPrivate(string $channel): Channel
     {
-        // if ((this.connector as any) instanceof SocketIoConnector) {
-        //     throw new Error(
-        //         `Broadcaster ${typeof this.options.broadcaster} ${
-        //             this.options.broadcaster
-        //         } does not support encrypted private channels.`
-        //     );
-        // }
-
         return $this->connector->encryptedPrivateChannel($channel);
     }
 
@@ -155,74 +142,4 @@ class Resonance
     {
         return $this->connector->socketId();
     }
-
-    /**
-     * Register 3rd party request interceptiors. These are used to automatically
-     * send a connections socket id to a Laravel app with a X-Socket-Id header.
-     */
-    // registerInterceptors(): void {
-    //     if (typeof Vue === 'function' && Vue.http) {
-    //         this.registerVueRequestInterceptor();
-    //     }
-
-    //     if (typeof axios === 'function') {
-    //         this.registerAxiosRequestInterceptor();
-    //     }
-
-    //     if (typeof jQuery === 'function') {
-    //         this.registerjQueryAjaxSetup();
-    //     }
-
-    //     if (typeof Turbo === 'object') {
-    //         this.registerTurboRequestInterceptor();
-    //     }
-    // }
-
-    /**
-     * Register a Vue HTTP interceptor to add the X-Socket-ID header.
-     */
-    // registerVueRequestInterceptor(): void {
-    //     Vue.http.interceptors.push((request, next) => {
-    //         if (this.socketId()) {
-    //             request.headers.set('X-Socket-ID', this.socketId());
-    //         }
-
-    //         next();
-    //     });
-    // }
-
-    /**
-     * Register an Axios HTTP interceptor to add the X-Socket-ID header.
-     */
-    // registerAxiosRequestInterceptor(): void {
-    //     axios.interceptors.request.use((config) => {
-    //         if (this.socketId()) {
-    //             config.headers['X-Socket-Id'] = this.socketId();
-    //         }
-
-    //         return config;
-    //     });
-    // }
-
-    /**
-     * Register jQuery AjaxPrefilter to add the X-Socket-ID header.
-     */
-    // registerjQueryAjaxSetup(): void {
-    //     if (typeof jQuery.ajax != 'undefined') {
-    //         jQuery.ajaxPrefilter((options, originalOptions, xhr) => {
-    //             if (this.socketId()) {
-    //                 xhr.setRequestHeader('X-Socket-Id', this.socketId());
-    //             }
-    //         });
-    //     }
-    // }
-
-    /**
-     * Register the Turbo Request interceptor to add the X-Socket-ID header.
-     */
-    // registerTurboRequestInterceptor(): void {
-    //     document.addEventListener('turbo:before-fetch-request', (event: any) => {
-    //         event.detail.fetchOptions.headers['X-Socket-Id'] = this.socketId();
-    //     });
-    // }
 }
