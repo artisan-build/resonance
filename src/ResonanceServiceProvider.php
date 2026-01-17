@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ArtisanBuild\Resonance;
 
 use Spatie\LaravelPackageTools\Package;
@@ -10,27 +12,15 @@ class ResonanceServiceProvider extends PackageServiceProvider
 {
     public function configurePackage(Package $package): void
     {
-        /*
-         * This class is a Package Service Provider
-         *
-         * More info: https://github.com/spatie/laravel-package-tools
-         */
         $package
             ->name('resonance')
             ->hasConfigFile()
             ->hasCommand(ResonanceCommand::class);
     }
 
-    // From PoC
-    // public function boot(): void
-    // {
-    //     $this->publishes([
-    //         __DIR__.'/../config/resonance.php' => config_path('resonance.php'),
-    //     ], 'config');
-    // }
-
-    // public function register(): void
-    // {
-    //     $this->mergeConfigFrom(__DIR__.'/../config/resonance.php', 'resonance');
-    // }
+    public function packageRegistered(): void
+    {
+        $this->app->singleton(ResonanceManager::class);
+        $this->app->alias(ResonanceManager::class, 'resonance');
+    }
 }

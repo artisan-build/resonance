@@ -1,5 +1,61 @@
 <?php
 
 return [
-    // ...
+    /*
+    |--------------------------------------------------------------------------
+    | Default Resonance Connection
+    |--------------------------------------------------------------------------
+    |
+    | This option controls the default connection that will be used when
+    | using the Resonance WebSocket client. You may set this to any of
+    | the connections defined in the "connections" array below.
+    |
+    */
+
+    'default' => env('RESONANCE_CONNECTION', 'reverb'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resonance Connections
+    |--------------------------------------------------------------------------
+    |
+    | Here you may define all of the WebSocket connections for your application.
+    | Each connection can use a different broadcaster (reverb, pusher, null).
+    |
+    */
+
+    'connections' => [
+        'reverb' => [
+            'broadcaster' => 'reverb',
+            'key' => env('REVERB_APP_KEY'),
+            'secret' => env('REVERB_APP_SECRET'),
+            'wsHost' => env('REVERB_HOST', '127.0.0.1'),
+            'wsPort' => env('REVERB_PORT', 8080),
+            'forceTLS' => env('REVERB_SCHEME', 'https') === 'https',
+        ],
+
+        'pusher' => [
+            'broadcaster' => 'pusher',
+            'key' => env('PUSHER_APP_KEY'),
+            'secret' => env('PUSHER_APP_SECRET'),
+            'cluster' => env('PUSHER_APP_CLUSTER', 'mt1'),
+            'forceTLS' => true,
+        ],
+
+        'null' => [
+            'broadcaster' => 'null',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Event Namespace
+    |--------------------------------------------------------------------------
+    |
+    | This option controls the default namespace for event classes. This is
+    | used when formatting event names for the WebSocket connection.
+    |
+    */
+
+    'namespace' => 'App.Events',
 ];
