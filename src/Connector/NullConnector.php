@@ -18,7 +18,7 @@ class NullConnector extends Connector
     /**
      * All of the subscribed channel names.
      */
-    public mixed $channels = [];
+    public array $channels = [];
 
     /**
      * Create a fresh connection.

@@ -20,8 +20,7 @@ class Resonance
     /**
      * The broadcasting connector.
      */
-    // protected Connector|PusherConnector $connector;
-    protected PusherConnector $connector;
+    protected Connector $connector;
 
     /**
      * The Echo options.

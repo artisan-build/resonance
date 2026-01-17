@@ -11,6 +11,11 @@ use Closure;
 abstract class Connector
 {
     /**
+     * All of the subscribed channel names.
+     */
+    public array $channels = [];
+
+    /**
      * Default connector options.
      */
     private mixed $defaultOptions = [
@@ -112,9 +117,19 @@ abstract class Connector
     abstract public function privateChannel(string $channel): Channel;
 
     /**
+     * Get a private encrypted channel instance by name.
+     */
+    abstract public function encryptedPrivateChannel(string $channel): Channel;
+
+    /**
      * Get a presence channel instance by name.
      */
     abstract public function presenceChannel(string $channel): PresenceChannel;
+
+    /**
+     * Listen for an event on a channel instance.
+     */
+    abstract public function listen(string $channel, string $event, Closure $callback): Channel;
 
     /**
      * Leave the given channel, as well as its private and presence variants.
