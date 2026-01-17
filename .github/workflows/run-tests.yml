@@ -74,15 +74,14 @@ jobs:
     name: Integration - P${{ matrix.php }} - L${{ matrix.laravel }}
 
     services:
-      soketi:
-        image: quay.io/soketi/soketi:1.6-16-debian
+      reverb:
+        image: ghcr.io/artisan-build/reverb-action:latest
         ports:
-          - 6001:6001
+          - 8080:8080
         env:
-          SOKETI_DEBUG: '1'
-          SOKETI_DEFAULT_APP_ID: app-id
-          SOKETI_DEFAULT_APP_KEY: app-key
-          SOKETI_DEFAULT_APP_SECRET: app-secret
+          REVERB_APP_ID: app-id
+          REVERB_APP_KEY: app-key
+          REVERB_APP_SECRET: app-secret
 
     steps:
       - name: Checkout code
@@ -105,17 +104,17 @@ jobs:
           composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
           composer update --${{ matrix.stability }} --prefer-dist --no-interaction --ignore-platform-reqs
 
-      - name: Wait for Soketi
+      - name: Wait for Reverb
         run: |
           for i in {1..30}; do
-            if nc -z localhost 6001; then
-              echo "Soketi is ready"
+            if nc -z localhost 8080; then
+              echo "Reverb is ready"
               exit 0
             fi
-            echo "Waiting for Soketi... ($i/30)"
+            echo "Waiting for Reverb... ($i/30)"
             sleep 1
           done
-          echo "Soketi failed to start"
+          echo "Reverb failed to start"
           exit 1
 
       - name: Execute integration tests
@@ -124,6 +123,6 @@ jobs:
           REVERB_APP_KEY: app-key
           REVERB_APP_SECRET: app-secret
           REVERB_HOST: 127.0.0.1
-          REVERB_PORT: 6001
+          REVERB_PORT: 8080
           REVERB_SCHEME: http
         run: vendor/bin/pest --ci --group=integration
