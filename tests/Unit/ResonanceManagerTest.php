@@ -5,26 +5,23 @@ use ArtisanBuild\Resonance\Resonance as ResonanceInstance;
 use ArtisanBuild\Resonance\ResonanceManager;
 
 it('resolves the default connection', function () {
+    // Default is 'null' to avoid starting real WebSocket connections
     $resonance = Resonance::connection();
 
     expect($resonance)->toBeInstanceOf(ResonanceInstance::class);
 });
 
 it('resolves a named connection', function () {
-    $resonance = Resonance::connection('reverb');
-
-    expect($resonance)->toBeInstanceOf(ResonanceInstance::class);
-});
-
-it('resolves the null connection', function () {
+    // Use 'null' driver to avoid starting real WebSocket connections
+    // The manager pattern works the same regardless of driver
     $resonance = Resonance::connection('null');
 
     expect($resonance)->toBeInstanceOf(ResonanceInstance::class);
 });
 
 it('caches connection instances', function () {
-    $first = Resonance::connection('null');
-    $second = Resonance::connection('null');
+    $first = Resonance::connection();
+    $second = Resonance::connection();
 
     expect($first)->toBe($second);
 });
@@ -36,7 +33,8 @@ it('throws for unconfigured connections', function () {
 it('returns the default driver name from config', function () {
     $manager = app(ResonanceManager::class);
 
-    expect($manager->getDefaultDriver())->toBe('reverb');
+    // TestCase sets default to 'null' to avoid starting real connections
+    expect($manager->getDefaultDriver())->toBe('null');
 });
 
 it('can extend with custom drivers', function () {
@@ -61,12 +59,7 @@ it('can extend with custom drivers', function () {
 });
 
 it('proxies method calls to the default connection', function () {
-    config()->set('resonance.default', 'null');
-
-    // Clear the cached driver so it picks up the new default
-    app()->forgetInstance(ResonanceManager::class);
-
-    // This should not throw - it proxies to the null connection
+    // Default is already 'null' in TestCase
     // NullConnector returns 'fake-socket-id' for testing purposes
     $socketId = Resonance::socketId();
 

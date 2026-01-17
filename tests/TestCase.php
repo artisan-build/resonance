@@ -33,7 +33,8 @@ class TestCase extends Orchestra
 
     protected function defineEnvironment($app)
     {
-        $app['config']->set('resonance.default', 'reverb');
+        // Default to null driver for unit tests to avoid starting real connections
+        $app['config']->set('resonance.default', 'null');
 
         $app['config']->set('resonance.connections.reverb', [
             'broadcaster' => 'reverb',
