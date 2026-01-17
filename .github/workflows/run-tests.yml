@@ -60,6 +60,7 @@ jobs:
   integration-reverb:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    continue-on-error: true  # TODO: Remove once reverb-action is fixed (see #3)
     name: Integration - Reverb
 
     services:
