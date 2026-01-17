@@ -7,11 +7,18 @@
 [![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/artisan-build/resonance/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/artisan-build/resonance/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
 [![Total Downloads](https://img.shields.io/packagist/dt/artisan-build/resonance.svg?style=flat-square)](https://packagist.org/packages/artisan-build/resonance)
 
-Resonance is a Laravel package that brings Laravel Echo's elegant API to pure PHP. It wraps [artisan-build/pusher-websocket-php](https://github.com/artisan-build/pusher-websocket-php) to provide seamless real-time WebSocket connectivity with Reverb, Pusher, Soketi, and other Pusher-compatible servers—all from your Laravel backend without requiring JavaScript.
+Resonance is a Laravel WebSocket client for CLI commands, queue workers, and background processes. Inspired by Laravel Echo's API, it provides a familiar interface for real-time event listening—but from your PHP backend instead of the browser.
+
+Built on [artisan-build/pusher-websocket-php](https://github.com/artisan-build/pusher-websocket-php) and ReactPHP's async event loop, Resonance connects to Reverb, Pusher, Soketi, and other Pusher-compatible servers.
 
 ## Why Resonance?
 
-Laravel Echo is fantastic for browser-based real-time features, but what about CLI commands, queue workers, daemons, or other server-side PHP processes that need to listen for WebSocket events? Resonance fills that gap by providing Echo's familiar API in pure PHP, powered by ReactPHP's async event loop.
+Laravel Echo handles real-time features in the browser, but what about server-side PHP processes that need to listen for WebSocket events? Resonance fills that gap with:
+
+- **Echo-inspired API** - Familiar `listen()`, `private()`, `join()` methods
+- **Manager pattern** - Connect to multiple WebSocket servers simultaneously
+- **Extensible drivers** - Add custom broadcasters with `extend()`
+- **Laravel-native** - Config files, facades, and service providers out of the box
 
 ## Installation
 
@@ -25,23 +32,104 @@ You can publish the config file with:
 php artisan vendor:publish --tag="resonance-config"
 ```
 
+## Configuration
+
+Resonance follows Laravel's convention of defining connections in config and selecting via environment variable:
+
+```php
+// config/resonance.php
+return [
+    'default' => env('RESONANCE_CONNECTION', 'reverb'),
+
+    'connections' => [
+        'reverb' => [
+            'broadcaster' => 'reverb',
+            'key' => env('REVERB_APP_KEY'),
+            'secret' => env('REVERB_APP_SECRET'),
+            'wsHost' => env('REVERB_HOST', '127.0.0.1'),
+            'wsPort' => env('REVERB_PORT', 8080),
+            'forceTLS' => env('REVERB_SCHEME', 'https') === 'https',
+        ],
+
+        'pusher' => [
+            'broadcaster' => 'pusher',
+            'key' => env('PUSHER_APP_KEY'),
+            'secret' => env('PUSHER_APP_SECRET'),
+            'cluster' => env('PUSHER_APP_CLUSTER', 'mt1'),
+            'forceTLS' => true,
+        ],
+
+        'null' => [
+            'broadcaster' => 'null',
+        ],
+    ],
+
+    'namespace' => 'App.Events',
+];
+```
+
+Use `RESONANCE_CONNECTION=null` in your `.env.testing` to disable WebSocket connections during tests.
+
 ## Usage
 
 ### Basic Channel Subscription
 
 ```php
+use ArtisanBuild\Resonance\Facades\Resonance;
+
+// Using the default connection from config
+$channel = Resonance::channel('orders');
+
+$channel->listen('OrderShipped', function ($event) {
+    echo "Order shipped: " . $event['order_id'];
+});
+```
+
+### Multiple Connections
+
+Resonance uses the Manager pattern, allowing you to work with multiple connections:
+
+```php
+use ArtisanBuild\Resonance\Facades\Resonance;
+
+// Use a specific connection
+Resonance::connection('reverb')->listen('orders', 'OrderShipped', function ($event) {
+    // Handle internal events from your Reverb server
+});
+
+Resonance::connection('pusher')->listen('analytics', 'PageView', function ($event) {
+    // Handle events from a third-party Pusher service
+});
+```
+
+### Custom Drivers
+
+Extend Resonance with custom broadcasters:
+
+```php
+use ArtisanBuild\Resonance\Facades\Resonance;
+
+Resonance::extend('ably', function ($app, $config) {
+    return new AblyConnector($config);
+});
+```
+
+### Direct Instantiation
+
+Or instantiate directly with custom options:
+
+```php
 use ArtisanBuild\Resonance\Resonance;
 
 $resonance = new Resonance([
-    'broadcaster' => 'reverb', // or 'pusher'
+    'broadcaster' => 'reverb',
     'key' => 'your-app-key',
-    'cluster' => 'mt1',
     'wsHost' => '127.0.0.1',
-    'wsPort' => 6001,
+    'wsPort' => 8080,
     'forceTLS' => false,
+    'namespace' => 'App.Events',
 ]);
 
-// Listen on a public channel
 $resonance->listen('orders', 'OrderShipped', function ($event) {
     echo "Order shipped: " . $event['order_id'];
 });
