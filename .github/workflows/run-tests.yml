@@ -63,19 +63,17 @@ jobs:
     continue-on-error: true  # TODO: Remove once reverb-action is fixed (see #3)
     name: Integration - Reverb
 
-    services:
-      reverb:
-        image: ghcr.io/artisan-build/reverb-action:latest
-        ports:
-          - 8080:8080
-        env:
-          REVERB_APP_ID: app-id
-          REVERB_APP_KEY: app-key
-          REVERB_APP_SECRET: app-secret
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v5
+
+      - name: Start Reverb
+        uses: artisan-build/reverb-action@main
+        id: reverb
+        with:
+          app-id: app-id
+          app-key: app-key
+          app-secret: app-secret
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -87,26 +85,13 @@ jobs:
       - name: Install dependencies
         run: composer update --prefer-stable --prefer-dist --no-interaction --ignore-platform-reqs
 
-      - name: Wait for Reverb
-        run: |
-          for i in {1..30}; do
-            if nc -z localhost 8080; then
-              echo "Reverb is ready"
-              exit 0
-            fi
-            echo "Waiting for Reverb... ($i/30)"
-            sleep 1
-          done
-          echo "Reverb failed to start"
-          exit 1
-
       - name: Execute integration tests
         env:
           REVERB_APP_ID: app-id
           REVERB_APP_KEY: app-key
           REVERB_APP_SECRET: app-secret
-          REVERB_HOST: 127.0.0.1
-          REVERB_PORT: 8080
+          REVERB_HOST: ${{ steps.reverb.outputs.host }}
+          REVERB_PORT: ${{ steps.reverb.outputs.port }}
           REVERB_SCHEME: http
         run: vendor/bin/pest --ci --group=integration
 
