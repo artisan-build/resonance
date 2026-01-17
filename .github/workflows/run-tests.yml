@@ -48,14 +48,44 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           soketi start --default.appId=app-id --default.appKey=app-key --default.appSecret=app-secret &
-          sleep 3
 
       - name: Start Soketi (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
           Start-Process -NoNewWindow soketi -ArgumentList "start", "--default.appId=app-id", "--default.appKey=app-key", "--default.appSecret=app-secret"
-          Start-Sleep -Seconds 3
+
+      - name: Wait for Soketi (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          for i in {1..30}; do
+            if nc -z localhost 6001 2>/dev/null; then
+              echo "Soketi is ready"
+              exit 0
+            fi
+            echo "Waiting for Soketi... ($i/30)"
+            sleep 1
+          done
+          echo "Soketi failed to start"
+          exit 1
+
+      - name: Wait for Soketi (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          for ($i = 1; $i -le 30; $i++) {
+            try {
+              $tcp = New-Object System.Net.Sockets.TcpClient("localhost", 6001)
+              $tcp.Close()
+              Write-Host "Soketi is ready"
+              exit 0
+            } catch {
+              Write-Host "Waiting for Soketi... ($i/30)"
+              Start-Sleep -Seconds 1
+            }
+          }
+          Write-Host "Soketi failed to start"
+          exit 1
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
