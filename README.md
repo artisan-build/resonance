@@ -1,4 +1,4 @@
-<p align="center"><img src="/art/ChatGPT Image Jan 16, 2026, 09_01_17 PM.png" alt="Resonance Logo"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/artisan-build/resonance/main/art/ChatGPT%20Image%20Jan%2016,%202026,%2009_01_17%20PM.png" alt="Resonance Logo"></p>
 
 # Resonance
 
