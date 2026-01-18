@@ -9,7 +9,7 @@ use Closure;
 /**
  * This interface represents a presence channel.
  */
-interface PresenceChannel
+interface PresenceChannel extends ChannelInterface
 {
     /**
      * Register a callback to be called anytime the member list changes.

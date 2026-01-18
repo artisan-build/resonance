@@ -36,10 +36,13 @@ function createTestResonance(array $options = []): Resonance
     return new Resonance(array_merge([
         'broadcaster' => 'reverb',
         'key' => env('REVERB_APP_KEY', 'app-key'),
-        'secret' => env('REVERB_APP_SECRET', 'app-secret'),
+        'authToken' => env('RESONANCE_AUTH_TOKEN'),
         'host' => env('REVERB_HOST', '127.0.0.1'),
         'port' => (int) env('REVERB_PORT', 8080),
-        'scheme' => env('REVERB_SCHEME', 'http'),
+        'forceTLS' => env('REVERB_SCHEME', 'http') === 'https',
+        'channelAuthorization' => [
+            'endpoint' => env('APP_URL', 'http://localhost').'/broadcasting/auth',
+        ],
         'namespace' => 'App.Events',
     ], $options));
 }

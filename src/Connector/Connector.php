@@ -18,21 +18,24 @@ abstract class Connector
     /**
      * Default connector options.
      */
-    private mixed $defaultOptions = [
+    private array $defaultOptions = [
         'channelAuthorization' => [
+            'transport' => 'http',
             'endpoint' => '/broadcasting/auth',
             'headers' => [],
         ],
         'userAuthentication' => [
+            'transport' => 'http',
             'endpoint' => '/broadcasting/user-auth',
             'headers' => [],
         ],
-        'cluster' => 'us3',
-        'broadcaster' => 'pusher',
-        'csrfToken' => null,
-        'bearerToken' => null,
-        'host' => null,
+        'broadcaster' => 'reverb',
         'key' => null,
+        'authToken' => null,
+        'host' => null,
+        'port' => null,
+        'forceTLS' => false,
+        'cluster' => '',
         'namespace' => 'App.Events',
     ];
 
@@ -53,47 +56,14 @@ abstract class Connector
     /**
      * Merge the custom options with the defaults.
      */
-    protected function setOptions(mixed $options): mixed
+    protected function setOptions(array $options): void
     {
         $this->options = array_merge($this->defaultOptions, $options);
 
-        $token = $this->csrfToken();
-
-        if ($token) {
-            $this->options['channelAuthorization']['headers']['X-CSRF-TOKEN'] = $token;
-            $this->options['userAuthentication']['headers']['X-CSRF-TOKEN'] = $token;
+        if ($this->options['authToken']) {
+            $this->options['channelAuthorization']['headers']['Authorization'] = "Bearer {$this->options['authToken']}";
+            $this->options['userAuthentication']['headers']['Authorization'] = "Bearer {$this->options['authToken']}";
         }
-
-        $token = $this->options['bearerToken'];
-
-        if ($token) {
-            $this->options['channelAuthorization']['headers']['Authorization'] = "Bearer {$token}";
-            $this->options['userAuthentication']['headers']['Authorization'] = "Bearer {$token}";
-        }
-
-        return $options;
-    }
-
-    /**
-     * Extract the CSRF token from the page.
-     */
-    protected function csrfToken(): ?string
-    {
-        // let selector;
-
-        // if (typeof window !== 'undefined' && window['Laravel'] && window['Laravel'].csrfToken) {
-        //     return window['Laravel'].csrfToken;
-        // } else if (this.options.csrfToken) {
-        //     return this.options.csrfToken;
-        // } else if (
-        //     typeof document !== 'undefined' &&
-        //     typeof document.querySelector === 'function' &&
-        //     (selector = document.querySelector('meta[name="csrf-token"]'))
-        // ) {
-        //     return selector.getAttribute('content');
-        // }
-
-        return null;
     }
 
     /**

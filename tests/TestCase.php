@@ -39,19 +39,25 @@ class TestCase extends Orchestra
         $app['config']->set('resonance.connections.reverb', [
             'broadcaster' => 'reverb',
             'key' => env('REVERB_APP_KEY', 'app-key'),
-            'secret' => env('REVERB_APP_SECRET', 'app-secret'),
-            'wsHost' => env('REVERB_HOST', '127.0.0.1'),
-            'wsPort' => (int) env('REVERB_PORT', 8080),
+            'authToken' => env('RESONANCE_AUTH_TOKEN'),
+            'host' => env('REVERB_HOST', '127.0.0.1'),
+            'port' => (int) env('REVERB_PORT', 8080),
             'forceTLS' => false,
+            'channelAuthorization' => [
+                'endpoint' => env('APP_URL', 'http://localhost').'/broadcasting/auth',
+            ],
             'namespace' => 'App.Events',
         ]);
 
         $app['config']->set('resonance.connections.pusher', [
             'broadcaster' => 'pusher',
             'key' => env('PUSHER_APP_KEY', 'pusher-key'),
-            'secret' => env('PUSHER_APP_SECRET', 'pusher-secret'),
+            'authToken' => env('RESONANCE_AUTH_TOKEN'),
             'cluster' => env('PUSHER_APP_CLUSTER', 'mt1'),
             'forceTLS' => true,
+            'channelAuthorization' => [
+                'endpoint' => env('APP_URL', 'http://localhost').'/broadcasting/auth',
+            ],
             'namespace' => 'App.Events',
         ]);
 

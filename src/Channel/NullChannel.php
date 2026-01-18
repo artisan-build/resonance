@@ -11,6 +11,10 @@ use Closure;
  */
 class NullChannel extends Channel
 {
+    public function __construct(
+        public private(set) string $name = 'null',
+    ) {}
+
     /**
      * Subscribe to a channel.
      */
@@ -47,6 +51,14 @@ class NullChannel extends Channel
      * Stop listening for an event on the channel instance.
      */
     public function stopListening(string $event, ?Closure $callback = null): static
+    {
+        return $this;
+    }
+
+    /**
+     * Stop listening to all events on the channel instance.
+     */
+    public function stopListeningToAll(?Closure $callback = null): static
     {
         return $this;
     }

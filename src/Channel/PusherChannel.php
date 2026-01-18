@@ -27,7 +27,7 @@ class PusherChannel extends Channel
      */
     public function __construct(
         protected mixed $pusher,
-        protected mixed $name,
+        public private(set) string $name,
         protected mixed $options,
     ) {
         $this->eventFormatter = new EventFormatter($options['namespace']);

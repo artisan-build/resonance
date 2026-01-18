@@ -28,7 +28,7 @@ it('caches connection instances', function () {
 
 it('throws for unconfigured connections', function () {
     Resonance::connection('nonexistent');
-})->throws(InvalidArgumentException::class, 'Driver [nonexistent] not supported.');
+})->throws(InvalidArgumentException::class, 'Resonance connection [nonexistent] is not configured.');
 
 it('returns the default driver name from config', function () {
     $manager = app(ResonanceManager::class);

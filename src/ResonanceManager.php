@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace ArtisanBuild\Resonance;
 
-use ArtisanBuild\Resonance\Connector\NullConnector;
-use ArtisanBuild\Resonance\Connector\PusherConnector;
-use Closure;
 use Illuminate\Support\Manager;
 use InvalidArgumentException;
 
@@ -17,7 +14,9 @@ class ResonanceManager extends Manager
      */
     public function connection(?string $name = null): Resonance
     {
-        return $this->driver($name);
+        $name = $name ?: $this->getDefaultDriver();
+
+        return $this->drivers[$name] ?? ($this->drivers[$name] = $this->resolve($name));
     }
 
     /**
@@ -29,38 +28,21 @@ class ResonanceManager extends Manager
     }
 
     /**
-     * Create a Reverb driver instance.
+     * Resolve the given connection.
      */
-    protected function createReverbDriver(): Resonance
-    {
-        return $this->createConnection('reverb');
-    }
-
-    /**
-     * Create a Pusher driver instance.
-     */
-    protected function createPusherDriver(): Resonance
-    {
-        return $this->createConnection('pusher');
-    }
-
-    /**
-     * Create a Null driver instance.
-     */
-    protected function createNullDriver(): Resonance
-    {
-        return $this->createConnection('null');
-    }
-
-    /**
-     * Create a new Resonance connection instance.
-     */
-    protected function createConnection(string $name): Resonance
+    protected function resolve(string $name): Resonance
     {
         $config = $this->config->get("resonance.connections.{$name}");
 
         if (is_null($config)) {
             throw new InvalidArgumentException("Resonance connection [{$name}] is not configured.");
+        }
+
+        // Check for custom creator based on broadcaster type
+        $broadcaster = $config['broadcaster'] ?? $name;
+
+        if (isset($this->customCreators[$broadcaster])) {
+            return $this->customCreators[$broadcaster]($this->container, $config);
         }
 
         return new Resonance([
@@ -74,6 +56,6 @@ class ResonanceManager extends Manager
      */
     public function __call($method, $parameters)
     {
-        return $this->driver()->$method(...$parameters);
+        return $this->connection()->$method(...$parameters);
     }
 }

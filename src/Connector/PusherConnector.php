@@ -31,32 +31,19 @@ class PusherConnector extends Connector
      */
     public function connect(): void
     {
-        $useTLS = ($this->options['scheme'] ?? 'https') === 'https'
-            || ($this->options['scheme'] ?? 'wss') === 'wss';
+        $port = $this->options['port'] ? (int) $this->options['port'] : null;
 
         $pusherOptions = new \ArtisanBuild\Pusher\Options(
-            channelAuthorization: $this->options['channelAuthorization'] ?? null,
-            userAuthentication: $this->options['userAuthentication'] ?? null,
-            cluster: $this->options['cluster'] ?? '',
-            wsHost: $this->options['host'] ?? null,
-            wsPort: isset($this->options['port']) ? (int) $this->options['port'] : null,
-            wssPort: isset($this->options['port']) ? (int) $this->options['port'] : null,
-            forceTLS: $useTLS,
+            channelAuthorization: $this->options['channelAuthorization'],
+            userAuthentication: $this->options['userAuthentication'],
+            cluster: $this->options['cluster'],
+            wsHost: $this->options['host'],
+            wsPort: $port,
+            wssPort: $port,
+            forceTLS: $this->options['forceTLS'],
         );
 
-        // if (typeof this.options.client !== 'undefined') {
-        if (array_key_exists('client', $this->options) && $this->options['client']) {
-            $this->pusher = $this->options['client'];
-        } elseif (
-            array_key_exists('Pusher', $this->options) &&
-            $this->options['Pusher'] &&
-            class_exists($this->options['Pusher'])
-        ) {
-            $this->pusher = new $this->options['Pusher']($this->options['key'], $pusherOptions);
-        } else {
-            $this->pusher = new Pusher($this->options['key'], $pusherOptions);
-        }
-
+        $this->pusher = new Pusher($this->options['key'], $pusherOptions);
         $this->pusher->connect();
     }
 

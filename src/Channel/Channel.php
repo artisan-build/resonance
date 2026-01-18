@@ -9,7 +9,7 @@ use Closure;
 /**
  * This class represents a basic channel.
  */
-abstract class Channel
+abstract class Channel implements ChannelInterface
 {
     /**
      * The Resonance options.
@@ -20,6 +20,11 @@ abstract class Channel
      * Listen for an event on the channel instance.
      */
     abstract public function listen(string $event, Closure $callback): static;
+
+    /**
+     * Listen for all events on the channel instance.
+     */
+    abstract public function listenToAll(Closure $callback): static;
 
     /**
      * Listen for a whisper event on the channel instance.
@@ -59,4 +64,14 @@ abstract class Channel
      * Register a callback to be called anytime an error occurs.
      */
     abstract public function error(Closure $callback): static;
+
+    /**
+     * Unsubscribe from the channel.
+     */
+    abstract public function unsubscribe(): void;
+
+    /**
+     * Stop listening to all events on the channel instance.
+     */
+    abstract public function stopListeningToAll(?Closure $callback = null): static;
 }

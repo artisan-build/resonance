@@ -45,18 +45,24 @@ return [
         'reverb' => [
             'broadcaster' => 'reverb',
             'key' => env('REVERB_APP_KEY'),
-            'secret' => env('REVERB_APP_SECRET'),
-            'wsHost' => env('REVERB_HOST', '127.0.0.1'),
-            'wsPort' => env('REVERB_PORT', 8080),
+            'authToken' => env('RESONANCE_AUTH_TOKEN'),
+            'host' => env('REVERB_HOST', '127.0.0.1'),
+            'port' => env('REVERB_PORT', 8080),
             'forceTLS' => env('REVERB_SCHEME', 'https') === 'https',
+            'channelAuthorization' => [
+                'endpoint' => env('APP_URL').'/broadcasting/auth',
+            ],
         ],
 
         'pusher' => [
             'broadcaster' => 'pusher',
             'key' => env('PUSHER_APP_KEY'),
-            'secret' => env('PUSHER_APP_SECRET'),
+            'authToken' => env('RESONANCE_AUTH_TOKEN'),
             'cluster' => env('PUSHER_APP_CLUSTER', 'mt1'),
             'forceTLS' => true,
+            'channelAuthorization' => [
+                'endpoint' => env('APP_URL').'/broadcasting/auth',
+            ],
         ],
 
         'null' => [
@@ -67,6 +73,21 @@ return [
     'namespace' => 'App.Events',
 ];
 ```
+
+### Configuration Options
+
+| Option | Description |
+|--------|-------------|
+| `broadcaster` | The broadcaster type: `reverb`, `pusher`, or `null` |
+| `key` | Your app key for the WebSocket server |
+| `authToken` | Bearer token for channel authorization (e.g., Sanctum token) |
+| `host` | WebSocket server hostname |
+| `port` | WebSocket server port |
+| `forceTLS` | Whether to use secure WebSocket (wss://) |
+| `cluster` | Pusher cluster (for Pusher broadcaster) |
+| `channelAuthorization.endpoint` | Full URL to your broadcasting auth endpoint |
+
+> **Note:** The `authToken` is your authentication token (like a Laravel Sanctum token) used to authorize private/presence channel subscriptions. This is **not** the Reverb app secret—channel authorization is handled server-side where the signing secret lives.
 
 Use `RESONANCE_CONNECTION=null` in your `.env.testing` to disable WebSocket connections during tests.
 
@@ -124,10 +145,13 @@ use ArtisanBuild\Resonance\Resonance;
 $resonance = new Resonance([
     'broadcaster' => 'reverb',
     'key' => 'your-app-key',
-    'wsHost' => '127.0.0.1',
-    'wsPort' => 8080,
+    'authToken' => 'your-sanctum-token',
+    'host' => '127.0.0.1',
+    'port' => 8080,
     'forceTLS' => false,
-    'namespace' => 'App.Events',
+    'channelAuthorization' => [
+        'endpoint' => 'https://your-app.com/broadcasting/auth',
+    ],
 ]);
 
 $resonance->listen('orders', 'OrderShipped', function ($event) {
@@ -209,17 +233,17 @@ Here's a real-time chat application built with `AsyncPrompt` from [artisan-build
 
 namespace App\Console\Prompts;
 
-use ArtisanBuild\Resonance\Resonance;
+use ArtisanBuild\Resonance\Facades\Resonance;
+use ArtisanBuild\Resonance\Resonance as ResonanceInstance;
 use Illuminate\Support\Collection;
 use Laravel\Prompts\AsyncPrompt;
 use Laravel\Prompts\Key;
 
 class ChatPrompt extends AsyncPrompt
 {
-    protected Resonance $socket;
+    protected ResonanceInstance $socket;
     protected mixed $channel;
     public Collection $messages;
-    public bool $typing = false;
 
     public function __construct()
     {
@@ -236,13 +260,8 @@ class ChatPrompt extends AsyncPrompt
 
     protected function connect(): void
     {
-        $this->socket = new Resonance([
-            'broadcaster' => 'reverb',
-            'key' => config('broadcasting.connections.reverb.key'),
-            'wsHost' => '127.0.0.1',
-            'wsPort' => 8080,
-            'forceTLS' => false,
-        ]);
+        // Use the facade - config provides auth token and endpoint
+        $this->socket = Resonance::connection('reverb');
 
         $this->socket->connected(function () {
             $this->channel = $this->socket->private('chat');
@@ -290,8 +309,8 @@ class ChatPrompt extends AsyncPrompt
 ```
 
 This example showcases:
-- **Async WebSocket connection** in a CLI environment
-- **Private channel** subscription with authentication
+- **Facade usage** with config-driven auth token and endpoint
+- **Private channel** subscription with automatic Bearer token authentication
 - **`listenToAll()`** for catching all channel events
 - **`listenForWhisper()`** for peer-to-peer client events
 - **`whisper()`** for sending client events without server round-trips

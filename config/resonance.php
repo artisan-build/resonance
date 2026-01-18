@@ -28,36 +28,48 @@ return [
         'reverb' => [
             'broadcaster' => 'reverb',
             'key' => env('REVERB_APP_KEY'),
-            'secret' => env('REVERB_APP_SECRET'),
-            'wsHost' => env('REVERB_HOST', '127.0.0.1'),
-            'wsPort' => env('REVERB_PORT', 8080),
+            'authToken' => env('RESONANCE_AUTH_TOKEN'),
+            'host' => env('REVERB_HOST', '127.0.0.1'),
+            'port' => env('REVERB_PORT', 8080),
             'forceTLS' => env('REVERB_SCHEME', 'https') === 'https',
+            'channelAuthorization' => [
+                'endpoint' => env('APP_URL').'/broadcasting/auth',
+            ],
         ],
 
         'soketi' => [
             'broadcaster' => 'reverb',
             'key' => env('SOKETI_APP_KEY'),
-            'secret' => env('SOKETI_APP_SECRET'),
-            'wsHost' => env('SOKETI_HOST', '127.0.0.1'),
-            'wsPort' => env('SOKETI_PORT', 6001),
+            'authToken' => env('RESONANCE_AUTH_TOKEN'),
+            'host' => env('SOKETI_HOST', '127.0.0.1'),
+            'port' => env('SOKETI_PORT', 6001),
             'forceTLS' => env('SOKETI_SCHEME', 'https') === 'https',
+            'channelAuthorization' => [
+                'endpoint' => env('APP_URL').'/broadcasting/auth',
+            ],
         ],
 
         'pusher' => [
             'broadcaster' => 'pusher',
             'key' => env('PUSHER_APP_KEY'),
-            'secret' => env('PUSHER_APP_SECRET'),
+            'authToken' => env('RESONANCE_AUTH_TOKEN'),
             'cluster' => env('PUSHER_APP_CLUSTER', 'mt1'),
             'forceTLS' => true,
+            'channelAuthorization' => [
+                'endpoint' => env('APP_URL').'/broadcasting/auth',
+            ],
         ],
 
         'ably' => [
             'broadcaster' => 'pusher',
             'key' => env('ABLY_KEY'),
-            'secret' => env('ABLY_SECRET'),
-            'wsHost' => 'realtime-pusher.ably.io',
-            'wsPort' => 443,
+            'authToken' => env('RESONANCE_AUTH_TOKEN'),
+            'host' => 'realtime-pusher.ably.io',
+            'port' => 443,
             'forceTLS' => true,
+            'channelAuthorization' => [
+                'endpoint' => env('APP_URL').'/broadcasting/auth',
+            ],
         ],
 
         'null' => [
