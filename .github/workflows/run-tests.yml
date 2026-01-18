@@ -67,7 +67,7 @@ jobs:
         uses: actions/checkout@v5
 
       - name: Start Reverb
-        uses: artisan-build/reverb-action@main
+        uses: artisan-build/reverb-action@v1
         id: reverb
         with:
           app-id: app-id
