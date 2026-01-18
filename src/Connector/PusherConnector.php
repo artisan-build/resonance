@@ -153,7 +153,7 @@ class PusherConnector extends Connector
      */
     public function leave(string $name): void
     {
-        $channels = [$name, "private-{$name}", "private-encrypted-{$$name}", "presence-{$name}"];
+        $channels = [$name, "private-{$name}", "private-encrypted-{$name}", "presence-{$name}"];
 
         foreach ($channels as $channel) {
             $this->leaveChannel($channel);

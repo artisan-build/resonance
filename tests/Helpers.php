@@ -1,0 +1,126 @@
+<?php
+
+use ArtisanBuild\Resonance\Resonance;
+use React\EventLoop\Loop;
+
+/**
+ * Ensure the WebSocket server is running before integration tests.
+ *
+ * @throws RuntimeException If server is not reachable
+ */
+function ensureWebSocketServerIsRunning(): void
+{
+    $host = env('REVERB_HOST', '127.0.0.1');
+    $port = env('REVERB_PORT', 8080);
+
+    $connection = @fsockopen($host, (int) $port, $errno, $errstr, 1);
+
+    if (! $connection) {
+        throw new RuntimeException(
+            "Integration tests require a running WebSocket server.\n\n" .
+            "For local development:\n" .
+            "  php artisan reverb:start\n\n" .
+            "Expected server at {$host}:{$port}\n" .
+            "Configure via REVERB_HOST and REVERB_PORT environment variables."
+        );
+    }
+
+    fclose($connection);
+}
+
+/**
+ * Create a test Resonance instance with default test configuration.
+ */
+function createTestResonance(array $options = []): Resonance
+{
+    return new Resonance(array_merge([
+        'broadcaster' => 'reverb',
+        'key' => env('REVERB_APP_KEY', 'app-key'),
+        'secret' => env('REVERB_APP_SECRET', 'app-secret'),
+        'host' => env('REVERB_HOST', '127.0.0.1'),
+        'port' => (int) env('REVERB_PORT', 8080),
+        'scheme' => env('REVERB_SCHEME', 'http'),
+        'namespace' => 'App.Events',
+    ], $options));
+}
+
+/**
+ * Run the ReactPHP event loop for a specified duration or until condition is met.
+ *
+ * @param  float  $timeout  Maximum time to run (seconds)
+ * @param  callable|null  $until  Optional condition callback - stops when returns true
+ * @param  float  $checkInterval  How often to check the condition (seconds)
+ */
+function runEventLoop(float $timeout = 1.0, ?callable $until = null, float $checkInterval = 0.01): void
+{
+    $loop = Loop::get();
+
+    // Always set up max timeout
+    $loop->addTimer($timeout, function () use ($loop) {
+        $loop->stop();
+    });
+
+    // If we have a condition, check it periodically
+    if ($until !== null) {
+        /** @var \React\EventLoop\TimerInterface|null $timer */
+        $timer = null;
+        $timer = $loop->addPeriodicTimer($checkInterval, function () use ($loop, $until, &$timer) {
+            if ($until()) {
+                if ($timer !== null) {
+                    $loop->cancelTimer($timer);
+                }
+                $loop->stop();
+            }
+        });
+    }
+
+    $loop->run();
+}
+
+/**
+ * Trigger a server-side event via the Pusher HTTP API.
+ *
+ * This allows testing that clients receive events broadcast from the server.
+ */
+function triggerServerEvent(string $channel, string $event, array $data = []): void
+{
+    $host = env('REVERB_HOST', '127.0.0.1');
+    $port = env('REVERB_PORT', 8080);
+    $appId = env('REVERB_APP_ID', 'app-id');
+    $key = env('REVERB_APP_KEY', 'app-key');
+    $secret = env('REVERB_APP_SECRET', 'app-secret');
+
+    $body = json_encode([
+        'name' => $event,
+        'channel' => $channel,
+        'data' => json_encode($data),
+    ]);
+
+    $path = "/apps/{$appId}/events";
+    $timestamp = time();
+
+    $params = [
+        'auth_key' => $key,
+        'auth_timestamp' => $timestamp,
+        'auth_version' => '1.0',
+        'body_md5' => md5($body),
+    ];
+
+    ksort($params);
+    $queryString = http_build_query($params);
+
+    $stringToSign = "POST\n{$path}\n{$queryString}";
+    $signature = hash_hmac('sha256', $stringToSign, $secret);
+
+    $url = "http://{$host}:{$port}{$path}?{$queryString}&auth_signature={$signature}";
+
+    $context = stream_context_create([
+        'http' => [
+            'method' => 'POST',
+            'header' => "Content-Type: application/json\r\n",
+            'content' => $body,
+        ],
+    ]);
+
+    file_get_contents($url, false, $context);
+}

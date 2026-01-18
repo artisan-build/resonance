@@ -58,14 +58,19 @@
         "psr-4": {
             "ArtisanBuild\\Resonance\\Tests\\": "tests/",
             "Workbench\\App\\": "workbench/app/"
-        }
+        },
+        "files": [
+            "tests/Helpers.php"
+        ]
     },
     "scripts": {
         "post-autoload-dump": "@composer run prepare",
         "prepare": "@php vendor/bin/testbench package:discover --ansi",
         "analyse": "vendor/bin/phpstan analyse",
-        "test": "vendor/bin/pest",
-        "test-coverage": "vendor/bin/pest --coverage",
+        "test": "vendor/bin/pest --exclude-group=integration",
+        "test:integration": "vendor/bin/pest --group=integration",
+        "test:all": "vendor/bin/pest",
+        "test:coverage": "vendor/bin/pest --coverage",
         "format": "vendor/bin/pint"
     },
     "config": {
@@ -88,3 +93,4 @@
     "minimum-stability": "dev",
     "prefer-stable": true
 }
+
